@@ -97,77 +97,77 @@ int main()
 
 		displayBoard(size,board,displayMines);
 
-while(true) {
-		printf("Enter command (m/M for command menu): ");
-		scanf("%c",&command);
-		getchar();
+		while(true) {
+			printf("Enter command (m/M for command menu): ");
+			scanf("%c",&command);
+			getchar();
 
-		switch (command) {
-			case 'm': case 'M':
-			displayMenu();
-			break;
+			switch (command) {
+				case 'm': case 'M':
+				displayMenu();
+				break;
 
-			case 'c': case 'C':
-			do {
-				printf("Enter row and column of cell: ");
-				scanf("%d%d",&row,&col);
-				getchar();
-				if (row < 1 || row > size || col < 1 || col > size) {
-					printf("Invalid row or column values. Try again.\n");
-				}
-			} while (row < 1 || row > size || col < 1 || col > size);
-			row--;
-			col--;
-			gameState = selectCell(row,col,size,board,false);
-			displayBoard(size,board,displayMines);
-			break;
+				case 'c': case 'C':
+				do {
+					printf("Enter row and column of cell: ");
+					scanf("%d%d",&row,&col);
+					getchar();
+					if (row < 1 || row > size || col < 1 || col > size) {
+						printf("Invalid row or column values. Try again.\n");
+					}
+				} while (row < 1 || row > size || col < 1 || col > size);
+				row--;
+				col--;
+				gameState = selectCell(row,col,size,board,false);
+				displayBoard(size,board,displayMines);
+				break;
 
-			case 'f': case 'F':
-			do {
-				printf("Enter row and column of cell: ");
-				scanf("%d%d",&row,&col);
-				getchar();
-				if (row < 1 || row > size || col < 1 || col > size) {
-					printf("Invalid row or column values. Try again.\n");
-				}
-			} while (row < 1 || row > size || col < 1 || col > size);
-			row--;
-			col--;
-			gameState = selectCell(row,col,size,board,true);
-			displayBoard(size,board,displayMines);
-			break;
+				case 'f': case 'F':
+				do {
+					printf("Enter row and column of cell: ");
+					scanf("%d%d",&row,&col);
+					getchar();
+					if (row < 1 || row > size || col < 1 || col > size) {
+						printf("Invalid row or column values. Try again.\n");
+					}
+				} while (row < 1 || row > size || col < 1 || col > size);
+				row--;
+				col--;
+				gameState = selectCell(row,col,size,board,true);
+				displayBoard(size,board,displayMines);
+				break;
 
-			case 's': case 'S':
-			displayMines = true;
-			displayBoard(size,board,displayMines);
-			break;
+				case 's': case 'S':
+				displayMines = true;
+				displayBoard(size,board,displayMines);
+				break;
 
-			case 'h': case 'H':
-			displayMines = false;
-			displayBoard(size,board,displayMines);
-			break;
+				case 'h': case 'H':
+				displayMines = false;
+				displayBoard(size,board,displayMines);
+				break;
 
-			case 'b': case 'B':
-			displayBoard(size,board,displayMines);
-			break;
+				case 'b': case 'B':
+				displayBoard(size,board,displayMines);
+				break;
 
-			case 'q': case 'Q':
-			printf("Bye.\n");
-			return 0;
+				case 'q': case 'Q':
+				printf("Bye.\n");
+				return 0;
 
-			default:
-			printf("Invalid command. Try again.\n");
-			break;
+				default:
+				printf("Invalid command. Try again.\n");
+				break;
+			}
+			// display appropriate message if the game is over
+			if (gameState == WON) {
+				printf("You found all the mines. Congratulations.\n");
+				break;
+			} else if (gameState == LOST) {
+				printf("Oops. Sorry, you landed on a mine.\n");
+				break;
+			}
 		}
-		// display appropriate message if the game is over
-		if (gameState == WON) {
-			printf("You found all the mines. Congratulations.\n");
-			break;
-		} else if (gameState == LOST) {
-			printf("Oops. Sorry, you landed on a mine.\n");
-			break;
-		}
-	}
 		while(gameState != INPROGRESS) {
 			printf("Play again? (y/Y or n/N)");
 			scanf("%c",&command);
@@ -454,7 +454,7 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 				printf("\e[31;47m X\e[0m");
 			}
 
-			 else if(board[i][j].is_mine && (displayMines || board[i][j].visible)) {
+			else if(board[i][j].is_mine && (displayMines || board[i][j].visible)) {
 				printf("\e[31;47m *\e[0m");
 
 			}
