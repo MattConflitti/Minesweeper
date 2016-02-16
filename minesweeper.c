@@ -1,6 +1,6 @@
 /************************************************************************
 * minesweeper.c																											 *
-*																																		 *
+****																																		 *
 * Author(s): Matt Conflitti																					 *
 ***********************************************************************/
 
@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #define BOARD_SIZE_MIN 5
 #define BOARD_SIZE_MAX 15
@@ -229,26 +230,16 @@ void initBoard(int size, Cell board[][size])
 ************************************************************************/
 void placeMinesOnBoard(int size, Cell board[][size], int nbrMines)
 {
-	int num;
 	int total = nbrMines;
 	while(total > 0) {
-		for(int i=0; i<size; i++) {
-			num = rand() % size;
-			for(int j=0;j<size; j++) {
-				if(total == 0) {
-					break;
-				}
+		int row = rand() % size;
+		int col = rand() % size;
 
-				if(j == num && !board[i][j].is_mine) {
-					board[i][j].is_mine = true;
-					total--;
-				}
-			}
+		if(!board[row][col].is_mine) {
+			board[row][col].is_mine = true;
+			total--;
 		}
-
 	}
-
-
 }
 
 /************************************************************************
@@ -445,21 +436,23 @@ void displayBoard(int size, Cell board[][size], bool displayMines)
 		for(int j=0;j<size; j++) {
 			if(board[i][j].visible && !board[i][j].is_mine) {
 				if(board[i][j].mines == (getMaxMines(size,board)) || board[i][j].mines > 4) {
-					printf("\e[31;42m%2d\e[0m", getNbrNeighborMines(i, j, size, board));
-				} else {
-					printf("\e[30;42m%2d\e[0m", getNbrNeighborMines(i, j, size, board));
+					printf("\e[31;47m%2d\e[0m", getNbrNeighborMines(i, j, size, board));
+				} else if(board[i][j].mines == 0) {
+					printf("\e[30;47m  \e[0m");
+				}else {
+					printf("\e[30;47m%2d\e[0m", getNbrNeighborMines(i, j, size, board));
 				}
 
 			}else if(board[i][j].marked) {
-				printf("\e[31;47m X\e[0m");
+				printf("\e[31;42m X\e[0m");
 			}
 
 			else if(board[i][j].is_mine && (displayMines || board[i][j].visible)) {
-				printf("\e[31;47m *\e[0m");
+				printf("\e[31;42m *\e[0m");
 
 			}
 			else {
-				printf("\e[30;47m ?\e[0m");
+				printf("\e[30;42m ?\e[0m");
 			}
 
 		}
@@ -537,9 +530,8 @@ Status selectCell(int row, int col, int size, Cell board[][size], bool flag)
 		return INPROGRESS;
 	}
 	if(!board[row][col].is_mine) {
-		board[row][col].visible=true;
 		board[row][col].marked = false;
-		setImmediateNeighborCellsVisible(row,col,size,board);
+		setAllNeighborCellsVisible(row,col,size,board);
 		if((nbrVisibleCells(size,board)+nbrOfMines(size,board)) >= (size*size)) {
 			return WON;
 		} else {
@@ -577,65 +569,69 @@ int nbrVisibleCells(int size, Cell board[][size])
 ************************************************************************/
 void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 {
-	if(row > 0 && row < size && col > 0 && col < size) {
-		//middle
-		board[row-1][col-1].visible =true;
-		board[row-1][col].visible =true;
-		board[row-1][col+1].visible =true;
-		board[row][col-1].visible =true;
-		board[row][col+1].visible =true;
-		board[row+1][col-1].visible =true;
-		board[row+1][col].visible =true;
-		board[row+1][col+1].visible =true;
-	}
-	//corners
-	else if(row == 0 && col == 0) {
-		board[row+1][col].visible =true;
-		board[row+1][col+1].visible =true;
-		board[row][col+1].visible =true;
-	}
-	else if(row == (size-1) && col == 0) {
-		board[row-1][col].visible =true;
-		board[row-1][col+1].visible =true;
-		board[row][col+1].visible =true;
-	}
-	else if(row == 0 && col == (size-1)) {
-		board[row+1][col].visible =true;
-		board[row+1][col-1].visible =true;
-		board[row][col-1].visible =true;
-	}
-	else if(row == (size-1) && col == (size-1)) {
-		board[row-1][col].visible =true;
-		board[row-1][col-1].visible =true;
-		board[row][col-1].visible =true;
-	}
-	//top and bottom row
-	else if(row == 0 && col > 0 && col < size) {
-		board[row][col-1].visible =true;
-		board[row+1][col-1].visible =true;
-		board[row+1][col].visible =true;
-		board[row+1][col+1].visible =true;
-		board[row][col+1].visible =true;
-	} else if(row == (size-1) && col > 0 && col < size) {
-		board[row][col-1].visible =true;
-		board[row-1][col-1].visible =true;
-		board[row-1][col].visible =true;
-		board[row-1][col+1].visible =true;
-		board[row][col+1].visible =true;
-	}
-	//left and right col
-	else if(col == 0 && row > 0 && row < size) {
-		board[row-1][col].visible =true;
-		board[row+1][col].visible =true;
-		board[row+1][col+1].visible =true;
-		board[row][col+1].visible =true;
-		board[row-1][col+1].visible =true;
-	} else if(col == (size-1) && row > 0 && row < size) {
-		board[row-1][col].visible =true;
-		board[row-1][col-1].visible =true;
-		board[row][col-1].visible =true;
-		board[row+1][col-1].visible =true;
-		board[row+1][col].visible =true;
+	if(board[row][col].mines == 0) {
+
+
+		if(row > 0 && row < size && col > 0 && col < (size-1)) {
+			//middle
+			board[row-1][col-1].visible =true;
+			board[row-1][col].visible =true;
+			board[row-1][col+1].visible =true;
+			board[row][col-1].visible =true;
+			board[row][col+1].visible =true;
+			board[row+1][col-1].visible =true;
+			board[row+1][col].visible =true;
+			board[row+1][col+1].visible =true;
+		}
+		//corners
+		else if(row == 0 && col == 0) {
+			board[row+1][col].visible =true;
+			board[row+1][col+1].visible =true;
+			board[row][col+1].visible =true;
+		}
+		else if(row == (size-1) && col == 0) {
+			board[row-1][col].visible =true;
+			board[row-1][col+1].visible =true;
+			board[row][col+1].visible =true;
+		}
+		else if(row == 0 && col == (size-1)) {
+			board[row+1][col].visible =true;
+			board[row+1][col-1].visible =true;
+			board[row][col-1].visible =true;
+		}
+		else if(row == (size-1) && col == (size-1)) {
+			board[row-1][col].visible =true;
+			board[row-1][col-1].visible =true;
+			board[row][col-1].visible =true;
+		}
+		//top and bottom row
+		else if(row == 0 && col > 0 && col < size) {
+			board[row][col-1].visible =true;
+			board[row+1][col-1].visible =true;
+			board[row+1][col].visible =true;
+			board[row+1][col+1].visible =true;
+			board[row][col+1].visible =true;
+		} else if(row == (size-1) && col > 0 && col < size) {
+			board[row][col-1].visible =true;
+			board[row-1][col-1].visible =true;
+			board[row-1][col].visible =true;
+			board[row-1][col+1].visible =true;
+			board[row][col+1].visible =true;
+		}
+		//left and right col
+		else if(col == 0 && row > 0 && row < size) {
+			board[row-1][col].visible =true;
+			board[row+1][col].visible =true;
+			board[row+1][col+1].visible =true;
+			board[row][col+1].visible =true;
+			board[row-1][col+1].visible =true;
+		} else if(col == (size-1) && row > 0 && row < size) {
+			board[row-1][col].visible =true;
+			board[row-1][col-1].visible =true;
+			board[row][col-1].visible =true;
+			board[row+1][col-1].visible =true;
+			board[row+1][col].visible =true;
+		}
 	}
 
 	for(int i=0; i<size; i++) {
@@ -647,6 +643,7 @@ void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][s
 	}
 }
 
+
 /************************************************************************
 * If the mine count of a cell at location (row,col) is zero, then make	*
 * the cells in the immediate neighborhood visible and repeat this		*
@@ -655,5 +652,35 @@ void setImmediateNeighborCellsVisible(int row, int col, int size, Cell board[][s
 ************************************************************************/
 void setAllNeighborCellsVisible(int row, int col, int size, Cell board[][size])
 {
-	// TO DO
+	if(row >= 0 && row < size && col >= 0 && col < size) {
+		if(board[row][col].visible==true) {
+			return;
+		}
+		board[row][col].visible=true;
+
+		// //Uncomment to see the visibility incrementally
+		// displayBoard(size,board,true);
+		// sleep(1);
+
+		if(board[row][col].mines == 0) {
+
+			setAllNeighborCellsVisible(row,col+1,size,board);
+			setAllNeighborCellsVisible(row,col-1,size,board);
+			setAllNeighborCellsVisible(row+1,col,size,board);
+			setAllNeighborCellsVisible(row+1,col-1,size,board);
+			setAllNeighborCellsVisible(row+1,col+1,size,board);
+			setAllNeighborCellsVisible(row-1,col,size,board);
+			setAllNeighborCellsVisible(row-1,col+1,size,board);
+			setAllNeighborCellsVisible(row-1,col-1,size,board);
+
+			for(int i=0; i<size; i++) {
+				for(int j=0;j<size; j++) {
+					if(board[i][j].is_mine) {
+						board[i][j].visible = false;
+					}
+				}
+			}
+		}
+
+	}
 }
