@@ -6,7 +6,7 @@ Basic command-line minesweeper game complete with colored board and ability to e
 
 Cheats are described in the menu.
 
-Grade Received: *Pending*
+Grade Received: *A*
 
 Have fun playing! ;-)
 
